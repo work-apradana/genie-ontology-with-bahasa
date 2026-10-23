@@ -1,0 +1,128 @@
+{
+  "datasets": [
+    {
+      "name": "ds_bulanan",
+      "displayName": "Omzet bersih per bulan",
+      "queryLines": [
+        "SELECT bulan, wilayah, MEASURE(omzet_bersih) AS omzet_bersih, MEASURE(gmv) AS gmv\n",
+        "FROM workspace.tokonusa.mv_penjualan\n",
+        "GROUP BY bulan, wilayah"
+      ]
+    },
+    {
+      "name": "ds_metode_bayar",
+      "displayName": "Transaksi per metode bayar",
+      "queryLines": [
+        "SELECT metode_bayar, MEASURE(jumlah_transaksi) AS jumlah_transaksi\n",
+        "FROM workspace.tokonusa.mv_penjualan\n",
+        "WHERE tahun = 2026\n",
+        "GROUP BY metode_bayar"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "ringkasan",
+      "displayName": "Ringkasan",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layout": [
+        {
+          "widget": {
+            "name": "judul",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## Kinerja Penjualan Nasional TokoNusa\n",
+                "Omzet bersih = penjualan kotor dikurangi diskon, retur, dan PPN. Data sintetis."
+              ]
+            }
+          },
+          "position": {"x": 0, "y": 0, "width": 6, "height": 2}
+        },
+        {
+          "widget": {
+            "name": "omzet_per_bulan",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_bulanan",
+                  "fields": [
+                    {"name": "bulan", "expression": "`bulan`"},
+                    {"name": "sum(omzet_bersih)", "expression": "SUM(`omzet_bersih`)"}
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {"fieldName": "bulan", "scale": {"type": "temporal"}, "displayName": "Bulan"},
+                "y": {"fieldName": "sum(omzet_bersih)", "scale": {"type": "quantitative"}, "displayName": "Omzet bersih (Rp)"}
+              },
+              "frame": {"showTitle": true, "title": "Omzet bersih per bulan (naik saat periode Lebaran)"}
+            }
+          },
+          "position": {"x": 0, "y": 2, "width": 6, "height": 6}
+        },
+        {
+          "widget": {
+            "name": "omzet_per_wilayah",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_bulanan",
+                  "fields": [
+                    {"name": "wilayah", "expression": "`wilayah`"},
+                    {"name": "sum(omzet_bersih)", "expression": "SUM(`omzet_bersih`)"}
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {"fieldName": "wilayah", "scale": {"type": "categorical"}, "displayName": "Wilayah"},
+                "y": {"fieldName": "sum(omzet_bersih)", "scale": {"type": "quantitative"}, "displayName": "Omzet bersih (Rp)"}
+              },
+              "frame": {"showTitle": true, "title": "Omzet bersih per wilayah"}
+            }
+          },
+          "position": {"x": 0, "y": 8, "width": 3, "height": 6}
+        },
+        {
+          "widget": {
+            "name": "transaksi_per_metode",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_metode_bayar",
+                  "fields": [
+                    {"name": "metode_bayar", "expression": "`metode_bayar`"},
+                    {"name": "sum(jumlah_transaksi)", "expression": "SUM(`jumlah_transaksi`)"}
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {"fieldName": "metode_bayar", "scale": {"type": "categorical"}, "displayName": "Metode bayar"},
+                "y": {"fieldName": "sum(jumlah_transaksi)", "scale": {"type": "quantitative"}, "displayName": "Jumlah transaksi"}
+              },
+              "frame": {"showTitle": true, "title": "Transaksi per metode bayar, 2026 (QRIS, COD, E-Wallet, Transfer Bank)"}
+            }
+          },
+          "position": {"x": 3, "y": 8, "width": 3, "height": 6}
+        }
+      ]
+    }
+  ]
+}
